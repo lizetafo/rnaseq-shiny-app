@@ -1,81 +1,65 @@
 # Bulk RNA-seq Differential Expression Shiny App
 
-An interactive **R Shiny** app that runs a complete bulk RNA-seq differential expression workflow with **DESeq2**, from raw count matrix to annotated results and publication-ready plots, without writing any code.
+An interactive **R Shiny** app that runs a complete bulk RNA-seq differential expression analysis with **DESeq2**, from a raw count matrix to annotated results and publication-ready plots, **without writing any code**.
 
-Upload a count matrix and sample metadata, choose your experimental design, and the app runs DESeq2, annotates genes, and produces volcano plots, heatmaps, and bar plots you can download.
+Upload a count matrix and a sample sheet, check the experimental design the app detects, and click **Run**. The app runs DESeq2, adds gene names, and produces volcano plots, heatmaps, bar plots and result tables you can download.
 
-![App screenshot](screenshots/app.png)
+![Volcano plot](docs/screenshots/2_volcano_plot.png)
 
 ---
 
 ## ✨ Features
+- **Flexible input:** count matrices and sample sheets as CSV, TSV or TXT, up to 1 GB
+- **Built-in checks:** missing or mismatched samples, sample order, duplicated samples and gene IDs, missing counts
+- **Automatic design detection:** suggests the grouping factor, reference group, design formula and contrast, all editable
+- **Multi-factor designs**, for example `~Activation + Infection`
+- **Gene annotation** for human, mouse, rat, fly, zebrafish and yeast, or any other Bioconductor organism package, from Ensembl, Entrez or symbol IDs
+- **Plots:** volcano plot with labeled top genes, clustered heatmap (normalized, VST or rlog), bar plot, all downloadable
+- **Tables:** annotated results, raw DESeq2 results and normalized counts, all downloadable
+- **Validated:** results are identical to running DESeq2 directly ([validation](validation/VALIDATION.md))
 
-- **Flexible input:** count matrices and metadata as `.csv`, `.txt`, or `.tsv` (uploads up to 1 GB)
-- **Built-in quality checks:** catches missing samples, mismatched sample order, duplicated samples, and duplicated gene IDs, with an option to convert NA counts to zero
-- **Custom experimental design:** set your own grouping factors, reference levels, DESeq2 design formula (e.g. `~ Condition`), and contrast
-- **Gene annotation** with Bioconductor OrgDb packages for six organisms, or any other annotation package you name:
+## 🚀 Quick start
+1. Install the packages once, in RStudio with this folder as the working directory:
+   ```r
+   source("setup/install_packages.R")
+   ```
+2. **Session → Restart R**, open `app.R`, and click **Run App**.
+3. Upload `example_data/prostate_hypoxia/counts.csv` and `metadata.csv`, then click **Upload**.
+4. Set the **reference level** to `Normoxia` and the **contrast** to `Condition, Hypoxia, Normoxia`, then click **Run**.
 
-  | Organism | Package |
-  |---|---|
-  | Human | `org.Hs.eg.db` |
-  | Mouse | `org.Mm.eg.db` |
-  | Rat | `org.Rn.eg.db` |
-  | Fruit fly | `org.Dm.eg.db` |
-  | Zebrafish | `org.Dr.eg.db` |
-  | Yeast | `org.Sc.sgd.db` |
-
-- **Supports several gene ID types:** Ensembl, Entrez, gene symbol, or a custom type (e.g. RefSeq, UniProt)
-- **Adjustable thresholds:** adjusted p-value (alpha), log2 fold-change cutoff, and number of top genes to display
-- **Visualizations:**
-  - Volcano plot with labeled top genes (`ggplot2`, `ggrepel`)
-  - Heatmap of top DE genes from normalized counts, VST, or rlog (`ComplexHeatmap`)
-  - Bar plot of top genes by log2 fold change
-- **Downloadable outputs:** all plots, annotated results, raw DESeq2 results, and normalized counts
-
-## 🚀 Getting started
-
-### Requirements
-- R (≥ 4.2 recommended) and RStudio
-- An internet connection the first time you run it. **The app installs any missing CRAN and Bioconductor packages automatically.**
-
-### Run the app
-```r
-# 1. Clone or download this repository
-# 2. Open app.R in RStudio and click "Run App", or run:
-shiny::runApp("app.R")
-```
-
-## 📂 Input format
-
-**Count matrix:** genes in rows, samples in columns. The first column holds the gene IDs.
-
-```
-GeneID,Sample1,Sample2,Sample3,Sample4
-ENSG00000000003,348,609,693,388
-ENSG00000000005,0,0,0,0
-```
-
-**Metadata:** one row per sample. The first column holds the sample names, which must exactly match the count matrix column names **in the same order**.
-
-```
-ID,Condition
-Sample1,Normoxia
-Sample2,Hypoxia
-```
+Step-by-step instructions with screenshots: **[docs/user_guide.md](docs/user_guide.md)**
 
 ## 🧪 Example datasets
+| Dataset | Organism | Comparison |
+|---|---|---|
+| `prostate_hypoxia` | Human | Prostate cancer cell lines, hypoxia vs normoxia |
+| `tumor_vs_normal` | Human | Tumor vs normal tissue (37 samples) |
+| `cd4_tcell_activation` | Human | CD4⁺ T cells, activated vs resting (± latent HIV) |
+| `mouse_knockout` | Mouse | Embryonic fibroblasts, knockout vs wild type |
 
-Four ready-to-use datasets are included to try the app:
+Settings for each dataset and the required file format: [example_data/README.md](example_data/README.md)
 
-| Counts | Metadata | Organism | Comparison | Example design |
-|---|---|---|---|---|
-| `counts.csv` | `meta.csv` | Human | Prostate cancer cell lines (PC3, LNCaP), hypoxia vs. normoxia | `~ Condition` |
-| `counts1.csv` | `metadata1.csv` | Human | Cancer vs. normal samples | `~ type` |
-| `counts2.csv` | `metadata2.csv` | Human | CD4⁺ T cells: activation state × HIV infection (uninfected / latent) | `~ Activation` |
-| `counts3.csv` | `metadata3.csv` | Mouse | Embryonic fibroblasts, knockout vs. wild type | `~ genotype` |
+## ✅ Validation
+For all four datasets, the app's results were compared with DESeq2 run directly. Every gene, fold change, p-value and normalized count was **identical**, with the same significant genes (302, 6,834, 17,622 and 5,733). Details: [validation/VALIDATION.md](validation/VALIDATION.md).
+
+## 📁 Repository structure
+```
+├── app.R                         # the Shiny app
+├── setup/install_packages.R      # one-time package installation
+├── docs/
+│   ├── user_guide.md             # step-by-step instructions
+│   ├── outputs.md                # what each table column and plot means
+│   ├── methods.md                # analysis steps and where the app fits in an RNA-seq workflow
+│   └── screenshots/
+├── example_data/                 # 4 example datasets (counts + metadata)
+└── validation/
+    ├── VALIDATION.md
+    └── compare_to_deseq2.R       # re-runs the comparison
+```
 
 ## 🛠️ Built with
 R · Shiny · DESeq2 · AnnotationDbi · ComplexHeatmap · ggplot2 · ggrepel · dplyr · DT
 
 ## 👩🏾‍🔬 Author
 **Elizabeth Etafo**, Ph.D. candidate, Pharmaceutical Sciences, University of Nebraska Medical Center
+[elizabethetafo.com](https://elizabethetafo.com) · [LinkedIn](https://www.linkedin.com/in/eetafo/)
