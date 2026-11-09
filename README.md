@@ -77,10 +77,5 @@ Four ready-to-use datasets are included to try the app:
 ## 🛠️ Built with
 R · Shiny · DESeq2 · AnnotationDbi · ComplexHeatmap · ggplot2 · ggrepel · dplyr · DT
 
-## 📖 Citation
-If you use this app, please cite DESeq2:
-
-> Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. *Genome Biology* 15, 550 (2014). https://doi.org/10.1186/s13059-014-0550-8
-
 ## 👩🏾‍🔬 Author
 **Elizabeth Etafo**, Ph.D. candidate, Pharmaceutical Sciences, University of Nebraska Medical Center
