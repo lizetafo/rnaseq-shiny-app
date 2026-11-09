@@ -1,5 +1,3 @@
 "dataset","comparison","genes_tested","same_genes","max_difference_results","max_difference_normalized_counts","significant_app","significant_deseq2"
 "prostate_hypoxia","Hypoxia vs Normoxia",25062,TRUE,0,0,302,302
 "tumor_vs_normal","cancer vs normal",28225,TRUE,0,0,6834,6834
-"cd4_tcell_activation","Activated vs Resting",25831,TRUE,0,0,17622,17622
-"mouse_knockout","KO vs WT",16565,TRUE,0,0,5733,5733

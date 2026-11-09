@@ -24,9 +24,7 @@ for (expr in parse("app.R")) {
 
 datasets <- list(
   list(name = "prostate_hypoxia",     factor = "Condition",  case = "Hypoxia", control = "Normoxia"),
-  list(name = "tumor_vs_normal",      factor = "type",       case = "cancer",  control = "normal"),
-  list(name = "cd4_tcell_activation", factor = "Activation", case = "Activated", control = "Resting"),
-  list(name = "mouse_knockout",       factor = "genotype",   case = "KO",      control = "WT")
+  list(name = "tumor_vs_normal",      factor = "type",       case = "cancer",  control = "normal")
 )
 
 summary_rows <- list()

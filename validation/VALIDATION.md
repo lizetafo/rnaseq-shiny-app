@@ -19,10 +19,13 @@ source("validation/compare_to_deseq2.R")
 |---|---|---|---|---|---|
 | prostate_hypoxia | Hypoxia vs Normoxia | 25,062 | ✅ | 0 / 0 | 302 / 302 |
 | tumor_vs_normal | cancer vs normal | 28,225 | ✅ | 0 / 0 | 6,834 / 6,834 |
-| cd4_tcell_activation | Activated vs Resting | 25,831 | ✅ | 0 / 0 | 17,622 / 17,622 |
-| mouse_knockout | KO vs WT | 16,565 | ✅ | 0 / 0 | 5,733 / 5,733 |
 
-The app's results are **identical** to plain DESeq2 for all four datasets. The app adds checks, annotation and plots without changing the statistics.
+The app's results are **identical** to plain DESeq2 for both datasets. The app adds checks, annotation and plots without changing the statistics.
 
 ## Full app run
-The app was also run in a browser on the three human datasets: upload → automatic design detection → Run → all plots → download of all three tables. The downloaded CSV files matched plain DESeq2 to within 10⁻¹⁴, which is rounding from saving the CSV. Gene symbols were assigned to 75–76% of Ensembl IDs and 96% of Entrez IDs. Ensembl IDs without a symbol are mostly non-coding or novel genes.
+The app was also run in a browser: upload → choose control group → Run → all plots → download of the tables.
+- After upload, the **control group is left blank**. Clicking Run before choosing one shows *"Please choose the reference (control) group"*.
+- Choosing **Normoxia** filled in the contrast `Condition, Hypoxia, Normoxia`.
+- The downloaded results matched plain DESeq2 to within 10⁻¹⁴ (rounding from saving the CSV), with the same 302 significant genes.
+- A sample sheet with a stray space in a group label (`Activated ` vs `Activated`) was read as **two** groups, not three, because labels are trimmed on upload.
+- Gene symbols were assigned to about 76% of Ensembl IDs. IDs without a symbol are mostly non-coding or novel genes.

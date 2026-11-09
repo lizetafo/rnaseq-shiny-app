@@ -7,7 +7,7 @@ source("setup/install_packages.R")
 ```
 Then go to **Session → Restart R**.
 
-> The organism databases (human, mouse, rat, fly, zebrafish, yeast) are large downloads, so the first installation can take 10–20 minutes.
+> Organism databases are large downloads. The setup script installs the **human** database. Others (mouse, rat, fly, zebrafish, yeast) are installed automatically the first time you select them in the app, which can take a few minutes once.
 
 ## 2. Start the app
 Open `app.R` in RStudio and click **Run App**.
@@ -21,16 +21,16 @@ Open `app.R` in RStudio and click **Run App**.
 1. **Upload Counts File**: raw counts, genes × samples (CSV, TSV or TXT). See [input format](../example_data/README.md#input-format).
 2. **Upload Metadata File**: one row per sample, in the same order as the count columns.
 3. Leave **Convert NA in counts to zero** ticked unless you want the app to stop on missing values.
-4. Click **Upload**. The app checks that sample names match, then **guesses the design** from the first metadata column that has 2–10 groups, and fills in the settings below.
+4. Click **Upload**. The app checks that sample names match, removes stray spaces from group labels, then detects the grouping column (the first metadata column with 2–10 groups) and fills in the settings below.
 
-**Check the guessed settings. The app picks the reference group alphabetically**, which is often the wrong way round:
+5. **Choose the control group** in **Reference level (control group)**. The app does not guess it. The **contrast** then fills in automatically (case first, control last). Check the other settings:
 
 | Setting | What it means | Example |
 |---|---|---|
 | **Organism Database** | Used to add gene names | Human (org.Hs.eg.db) |
 | **ID Type** | The type of gene IDs in your counts file: `ENSG…` = ENSEMBL, numbers = ENTREZID, gene names = SYMBOL | ENSEMBL |
 | **Experimental Grouping Factor(s)** | Metadata column(s) that define groups; separate several with commas | `Condition` |
-| **Reference Column / Reference level** | The **control** group that fold changes are measured against | `Condition` / `Normoxia` |
+| **Reference Column / Reference level (control group)** | The **control** group that fold changes are measured against. Choose it from the dropdown. | `Condition` / `Normoxia` |
 | **Experimental Design Formula** | DESeq2 design; add covariates with `+` | `~Condition` or `~Activation + Infection` |
 | **Contrast (Factor, Case, Control)** | The comparison to report: **case first, control last** | `Condition, Hypoxia, Normoxia` |
 
@@ -42,7 +42,7 @@ With contrast `Condition, Hypoxia, Normoxia`, a **positive log2 fold change mean
 - **Transformation for heatmap**: normalized counts, VST or rlog. VST and rlog stabilize the variance of low counts, and VST is a good default.
 - **Number of top genes**: how many genes to label and show in the heatmap and bar plot.
 
-5. Click **Run**. DESeq2 usually takes from a few seconds to about a minute.
+6. Click **Run**. If no control group is chosen, the app asks for one. DESeq2 usually takes from a few seconds to about a minute.
 
 ---
 
@@ -85,6 +85,8 @@ Column meanings are in [outputs.md](outputs.md).
 | *NA values in counts* | Tick "Convert NA in counts to zero", or fix the file. |
 | *Design formula is not valid* | Start the formula with `~`, for example `~Condition`. |
 | *Invalid contrast entered* | Use exactly three items: `factor, case, control`. |
-| More groups than expected | Look for typos or trailing spaces in group labels (`Activated` vs `Activated `). |
+| More groups than expected | Look for typos in group labels, for example `Activated` vs `activated`. Stray spaces are removed automatically. |
 | Few genes get gene names | The ID type or organism is probably wrong. |
 | Package installation fails on first run | Run `setup/install_packages.R` first, then restart R. |
+| *Please choose the reference (control) group* | Pick the control group in the **Reference level** dropdown, then click Run. |
+| A message says an organism database is installing | One-time download the first time you use that organism. Wait for it to finish. |

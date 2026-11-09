@@ -11,9 +11,9 @@ Upload a count matrix and a sample sheet, check the experimental design the app 
 ## ✨ Features
 - **Flexible input:** count matrices and sample sheets as CSV, TSV or TXT, up to 1 GB
 - **Built-in checks:** missing or mismatched samples, sample order, duplicated samples and gene IDs, missing counts
-- **Automatic design detection:** suggests the grouping factor, reference group, design formula and contrast, all editable
+- **Guided design setup:** detects the grouping factor and design formula, asks you to choose the control group, then fills in the contrast, all editable
 - **Multi-factor designs**, for example `~Activation + Infection`
-- **Gene annotation** for human, mouse, rat, fly, zebrafish and yeast, or any other Bioconductor organism package, from Ensembl, Entrez or symbol IDs
+- **Gene annotation** for human, mouse, rat, fly, zebrafish and yeast, or any other Bioconductor organism package, from Ensembl, Entrez or symbol IDs. Each organism database is downloaded only the first time it is used.
 - **Plots:** volcano plot with labeled top genes, clustered heatmap (normalized, VST or rlog), bar plot, all downloadable
 - **Tables:** annotated results, raw DESeq2 results and normalized counts, all downloadable
 - **Validated:** results are identical to running DESeq2 directly ([validation](validation/VALIDATION.md))
@@ -25,7 +25,7 @@ Upload a count matrix and a sample sheet, check the experimental design the app 
    ```
 2. **Session → Restart R**, open `app.R`, and click **Run App**.
 3. Upload `example_data/prostate_hypoxia/counts.csv` and `metadata.csv`, then click **Upload**.
-4. Set the **reference level** to `Normoxia` and the **contrast** to `Condition, Hypoxia, Normoxia`, then click **Run**.
+4. Choose **Normoxia** as the **reference level (control group)**. The contrast fills in as `Condition, Hypoxia, Normoxia`. Click **Run**.
 
 Step-by-step instructions with screenshots: **[docs/user_guide.md](docs/user_guide.md)**
 
@@ -33,14 +33,12 @@ Step-by-step instructions with screenshots: **[docs/user_guide.md](docs/user_gui
 | Dataset | Organism | Comparison |
 |---|---|---|
 | `prostate_hypoxia` | Human | Prostate cancer cell lines, hypoxia vs normoxia |
-| `tumor_vs_normal` | Human | Tumor vs normal tissue (37 samples) |
-| `cd4_tcell_activation` | Human | CD4⁺ T cells, activated vs resting (± latent HIV) |
-| `mouse_knockout` | Mouse | Embryonic fibroblasts, knockout vs wild type |
+| `tumor_vs_normal` | Human | Colorectal tumor vs normal colon (37 samples) |
 
-Settings for each dataset and the required file format: [example_data/README.md](example_data/README.md)
+Both datasets are public GEO data ([GSE106305](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE106305) and [GSE50760](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50760)). Sources, settings for each dataset and the required file format: [example_data/README.md](example_data/README.md)
 
 ## ✅ Validation
-For all four datasets, the app's results were compared with DESeq2 run directly. Every gene, fold change, p-value and normalized count was **identical**, with the same significant genes (302, 6,834, 17,622 and 5,733). Details: [validation/VALIDATION.md](validation/VALIDATION.md).
+For both datasets, the app's results were compared with DESeq2 run directly. Every gene, fold change, p-value and normalized count was **identical**, with the same significant genes (302 and 6,834). Details: [validation/VALIDATION.md](validation/VALIDATION.md).
 
 ## 📁 Repository structure
 ```
@@ -51,7 +49,7 @@ For all four datasets, the app's results were compared with DESeq2 run directly.
 │   ├── outputs.md                # what each table column and plot means
 │   ├── methods.md                # analysis steps and where the app fits in an RNA-seq workflow
 │   └── screenshots/
-├── example_data/                 # 4 example datasets (counts + metadata)
+├── example_data/                 # 2 example datasets (counts + metadata)
 └── validation/
     ├── VALIDATION.md
     └── compare_to_deseq2.R       # re-runs the comparison

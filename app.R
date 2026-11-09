@@ -24,10 +24,9 @@ loadlib <- function(extra_Bioc=NULL, other_extra=NULL){  #incase you need to loa
   if(!requireNamespace("BiocManager", quietly = TRUE)){
     install.packages("BiocManager") 
   }
-  Bioc_<- c("DESeq2", "AnnotationDbi", 
-            "org.Hs.eg.db","org.Mm.eg.db",
-            "org.Rn.eg.db", "org.Dm.eg.db",  
-            "org.Dr.eg.db","org.Sc.sgd.db", "ComplexHeatmap")
+  #organism annotation databases are large, so they are installed only when
+  #first selected in the app (see load_orgdb below)
+  Bioc_<- c("DESeq2", "AnnotationDbi", "ComplexHeatmap")
   Bioc_pack<- unique(c(extra_Bioc, Bioc_)) #concatenates extra biocmanager packages to default pacakages
   Bioc_missing<- Bioc_pack[!vapply(Bioc_pack, requireNamespace, 
                                    FUN.VALUE = logical(1), quietly=TRUE)]
@@ -48,6 +47,20 @@ loadlib <- function(extra_Bioc=NULL, other_extra=NULL){  #incase you need to loa
   })
   
   message("All required packages have been successfully installed and loaded")
+}
+
+########################################################################
+############Install (if needed) and load an organism database##########
+########################################################################
+load_orgdb<- function(pkg_name){
+  #pkg_name: e.g. "org.Hs.eg.db". Installed once, the first time it is used.
+  if(!requireNamespace(pkg_name, quietly = TRUE)){
+    if(!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+    BiocManager::install(pkg_name, ask = FALSE, update = FALSE)
+  }
+  if(!requireNamespace(pkg_name, quietly = TRUE))
+    stop(paste0("Could not install '", pkg_name, "'. Install it with BiocManager::install('", pkg_name, "')"))
+  get(pkg_name, envir = asNamespace(pkg_name))
 }
 
 ########################################################################
@@ -100,6 +113,8 @@ read_file<- function(cnts, met, na_to_zero = FALSE){
   }
   rownames(meta)<- trimws(meta[,1]) #trimws removes whitespace 
   meta<- meta[, -1, drop=FALSE]
+  #trim stray spaces in group labels ("Activated " and "Activated" are the same group)
+  meta[]<- lapply(meta, function(x) if(is.character(x)) trimws(x) else x)
   
   invisible(list(counts = counts, metadata = meta))
   
@@ -608,8 +623,8 @@ ui<- fluidPage(
       
       textInput(inputId = "ref_col", "Reference Column"),
       helpText("Enter reference column name from metadata (example: Activation)"),
-      textInput(inputId = "ref_levels", "Reference level"),
-      helpText("Enter reference level from metadata (example: Resting)"),
+      selectInput(inputId = "ref_levels", "Reference level (control group)", choices = NULL),
+      helpText("Choose the control group that fold changes are compared against (example: Resting)"),
       
       textInput(inputId = "Exp_design", "Experimental Design Formula"),
       helpText("Enter experiment design formula to be used for DESeq2 (example ~Activation)"),
@@ -770,16 +785,44 @@ server<- function(input, output, session){
           #Prefils the UI fiels with what was guessed, may not be want the user wants so user can change to desired settings
           updateTextInput(session, "Exp_groups", value= candidate)
           updateTextInput(session, "ref_col", value= candidate)
-          updateTextInput(session, "ref_levels", value= ref_level)
+          #the control group is NOT guessed: the user must choose it
+          updateSelectInput(session, "ref_levels",
+                            choices = c("-- choose control group --" = "", lv), selected = "")
           updateTextInput(session, "Exp_design", value= paste0("~", candidate))
-          updateTextInput(session, "contrast", 
-                      value= paste(candidate, case_level, ref_level, sep=","))
+          updateTextInput(session, "contrast", value= "")
     
         
       }
       
-      showNotification("Data uploaded and design guessed. You can review/edit settings and then click Run.", type="message")
+      showNotification("Data uploaded. Choose the control (reference) group, check the settings, then click Run.",
+                       type="message", duration = 10)
   })
+
+  #when the reference column changes, offer its groups as control-group choices
+  observeEvent(input$ref_col, {
+    req(data_store$dat)
+    col<- trimws(input$ref_col)
+    meta<- data_store$dat$metadata
+    if(col %in% names(meta)){
+      lv<- sort(unique(as.character(meta[[col]])))
+      keep<- if(isTRUE(input$ref_levels %in% lv)) input$ref_levels else ""
+      updateSelectInput(session, "ref_levels",
+                        choices = c("-- choose control group --" = "", lv), selected = keep)
+    }
+  }, ignoreInit = TRUE)
+
+  #when a control group is chosen, fill in the contrast (case vs control)
+  observeEvent(input$ref_levels, {
+    req(data_store$dat, nzchar(input$ref_levels))
+    col<- trimws(input$ref_col)
+    meta<- data_store$dat$metadata
+    if(col %in% names(meta)){
+      others<- setdiff(sort(unique(as.character(meta[[col]]))), input$ref_levels)
+      if(length(others) >= 1)
+        updateTextInput(session, "contrast",
+                        value = paste(col, others[1], input$ref_levels, sep=","))
+    }
+  }, ignoreInit = TRUE)
    
   
   ###building ref levels from UI
@@ -794,14 +837,20 @@ server<- function(input, output, session){
   ###chooisng organism data base
   orgdb <- reactive({
     if(input$Orgdb != "other"){
-      db<- switch(input$Orgdb,
-                  human = org.Hs.eg.db,
-                  mouse = org.Mm.eg.db,
-                  rat = org.Rn.eg.db,
-                  fly = org.Dm.eg.db,
-                  zfish = org.Dr.eg.db,
-                  yeast = org.Sc.sgd.db      
+      pkg<- switch(input$Orgdb,
+                   human = "org.Hs.eg.db",
+                   mouse = "org.Mm.eg.db",
+                   rat = "org.Rn.eg.db",
+                   fly = "org.Dm.eg.db",
+                   zfish = "org.Dr.eg.db",
+                   yeast = "org.Sc.sgd.db"
       )
+      #installs the database the first time it is used (one-time download)
+      if(!requireNamespace(pkg, quietly = TRUE))
+        showNotification(paste0("Installing ", pkg, " (one-time download, may take a few minutes)..."),
+                         type = "warning", duration = NULL, id = "orgdb_install")
+      db<- load_orgdb(pkg)
+      removeNotification("orgdb_install")
       return(db)
     }
     
@@ -846,7 +895,9 @@ server<- function(input, output, session){
   pipeline<- eventReactive(input$run, {
     validate(   #ensures count and metadata have been uploaded
       need(!is.null(data_store$dat),
-           "Please upload data and detect design first (click 'Upload')")
+           "Please upload data and detect design first (click 'Upload')"),
+      need(nzchar(input$ref_levels),
+           "Please choose the reference (control) group, then click Run.")
     )
     
     #Retrieve stored data
