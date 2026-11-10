@@ -4,6 +4,9 @@ An interactive **R Shiny** app that runs a complete bulk RNA-seq differential ex
 
 Upload a count matrix and a sample sheet, check the experimental design the app detects, and click **Run**. The app runs DESeq2, adds gene names, and produces volcano plots, heatmaps, bar plots and result tables you can download.
 
+### ▶️ [Try the app online](https://01a1c6c1-cbf8-a124-ddcd-1f24a83e1a02.share.connect.posit.cloud/)
+An upgraded online version, with quality-control plots, an MA plot and a gene explorer, is in [RNAseq-web](https://github.com/lizetafo/RNAseq-web).
+
 ![Volcano plot](docs/screenshots/2_volcano_plot.png)
 
 ---
@@ -35,7 +38,7 @@ Step-by-step instructions with screenshots: **[docs/user_guide.md](docs/user_gui
 | `prostate_hypoxia` | Human | Prostate cancer cell lines, hypoxia vs normoxia |
 | `tumor_vs_normal` | Human | Colorectal tumor vs normal colon (37 samples) |
 
-Both datasets are public GEO data ([GSE106305](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE106305) and [GSE50760](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50760)). Sources, settings for each dataset and the required file format: [example_data/README.md](example_data/README.md)
+Both datasets are public GEO data, from Guo et al., *Nature Communications* 2019 and Kim et al., *Molecular Oncology* 2014 ([GSE106305](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE106305) and [GSE50760](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50760)). Sources, settings for each dataset and the required file format: [example_data/README.md](example_data/README.md)
 
 ## ✅ Validation
 For both datasets, the app's results were compared with DESeq2 run directly. Every gene, fold change, p-value and normalized count was **identical**, with the same significant genes (302 and 6,834). Details: [validation/VALIDATION.md](validation/VALIDATION.md).
